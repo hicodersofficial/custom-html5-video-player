@@ -69,6 +69,8 @@ body {
   visibility: hidden;
   z-index: 99;
   transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .duration {
@@ -124,7 +126,7 @@ body {
 
 .btn-controls {
   padding-top: 1rem;
-  font-size: 1.6rem;
+  font-size: 1.2rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -143,6 +145,40 @@ body {
 .play-pause {
   display: flex;
   margin-right: 0.5rem;
+}
+
+.control-btn {
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 50%;
+  background: #36363672;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.control-btn:hover {
+  border: 1px solid #3131315c;
+}
+
+.control-btn::before {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #2424246a;
+  position: absolute;
+  transition: all 0.1s;
+  transform: scale(0);
+}
+
+.control-btn:active::before {
+  transform: scale(1);
+  border: 1px solid #3131315c;
 }
 
 .time-container {
@@ -212,6 +248,19 @@ body {
   display: flex !important;
   background: #000 !important;
   align-items: center !important;
+}
+
+.right-controls {
+  display: flex;
+  align-items: center;
+}
+
+.right-controls span {
+  cursor: pointer;
+}
+
+.forward {
+  margin: 0 0.5rem;
 }
 
 @keyframes playPause {

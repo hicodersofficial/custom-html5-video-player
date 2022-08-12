@@ -25,6 +25,7 @@
     <div class="video-container">
       <video
         id="video"
+        disableRemotePlayback
         src="http://distribution.bbb3d.renderfarming.net/video/mp4/bbb_sunflower_1080p_60fps_normal.mp4"
       ></video>
       <span class="play-pause-main">
@@ -37,11 +38,11 @@
         </div>
         <div class="btn-controls">
           <div class="btn-con">
-            <span class="play-pause">
+            <span class="play-pause control-btn">
               <ion-icon name="play-outline"></ion-icon>
             </span>
             <span class="volume">
-              <span class="mute-unmute">
+              <span class="mute-unmute control-btn">
                 <ion-icon name="volume-high-outline"></ion-icon>
               </span>
               <div class="max-vol">
@@ -54,9 +55,17 @@
               <span class="total-duration">0:00</span>
             </span>
           </div>
-          <span class="full-screen" title="fullscreen">
-            <ion-icon name="scan-outline"></ion-icon>
-          </span>
+          <div class="right-controls">
+            <span class="backward control-btn" title="5 backward">
+              <ion-icon name="play-back-outline"></ion-icon>
+            </span>
+            <span class="forward control-btn" title="5 forward">
+              <ion-icon name="play-forward-outline"></ion-icon>
+            </span>
+            <span class="full-screen control-btn" title="fullscreen">
+              <ion-icon name="scan-outline"></ion-icon>
+            </span>
+          </div>
         </div>
       </div>
     </div>

@@ -13,6 +13,8 @@ const currentVol = document.querySelector(".current-vol");
 const totalVol = document.querySelector(".max-vol");
 const mainPlayPause = document.querySelector(".play-pause-main");
 const muteUnmute = document.querySelector(".mute-unmute");
+const forward = document.querySelector(".forward");
+const backward = document.querySelector(".backward");
 
 let isPlaying = false,
   mouseDownProgress = false,
@@ -112,6 +114,16 @@ muteUnmute.addEventListener("mouseout", (e) => {
   }
 });
 
+forward.addEventListener("click", () => {
+  video.currentTime += 5;
+  handleProgressBar();
+});
+
+backward.addEventListener("click", () => {
+  video.currentTime -= 5;
+  handleProgressBar();
+});
+
 function canPlayInit() {
   totalDuration.innerHTML = `${Math.floor(video.duration / 60)}:${Math.floor(
     video.duration % 60
@@ -135,6 +147,10 @@ function play() {
 
 function watchInterval() {
   interval = requestAnimationFrame(watchInterval);
+  handleProgressBar();
+}
+
+function handleProgressBar() {
   currentTime.style.width = (video.currentTime / video.duration) * 100 + "%";
   currentDuration.innerHTML = `${Math.floor(
     video.currentTime / 60
