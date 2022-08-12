@@ -26,74 +26,14 @@ let isPlaying = false,
 
 currentVol.style.width = volumeVal * 100 + "%";
 
-video.oncanplay = function () {
-  totalDuration.innerHTML = `${Math.floor(video.duration / 60)}:${Math.floor(
-    video.duration % 60
-  )}`;
-  video.volume = volumeVal;
-  muted = video.muted;
-  if (video.paused) {
-    controls.classList.add("show-controls");
-    mainPlayPause.classList.add("show-main-play-pause");
-  }
-};
+// Video Event Listeners
+video.addEventListener("canplay", canPlayInit);
+video.addEventListener("play", play);
+video.addEventListener("pause", pause);
+video.addEventListener("progress", handleProgress);
+video.addEventListener("click", handleMainPlayPause);
 
-video.onprogress = function (e) {
-  const width = (video.buffered.end(0) / video.duration) * 100 + "%";
-  buffer.style.width = width;
-};
-
-video.onpause = function () {
-  pause();
-  if (video.ended) {
-    currentTime.style.width = 100 + "%";
-  }
-  cancelAnimationFrame(interval);
-};
-
-video.onplay = function () {
-  play();
-  watchInterval();
-};
-
-function play() {
-  video.play();
-  isPlaying = true;
-  playPause.innerHTML = `<ion-icon name="pause-outline"></ion-icon>`;
-  mainPlayPause.innerHTML = `<ion-icon name="pause-outline"></ion-icon>`;
-  mainPlayPause.classList.remove("show-main-play-pause");
-}
-
-function watchInterval() {
-  interval = requestAnimationFrame(watchInterval);
-  currentTime.style.width = (video.currentTime / video.duration) * 100 + "%";
-  currentDuration.innerHTML = `${Math.floor(
-    video.currentTime / 60
-  )}:${Math.floor(video.currentTime % 60)}`;
-}
-
-function pause() {
-  video.pause();
-  isPlaying = false;
-  playPause.innerHTML = `<ion-icon name="play-outline"></ion-icon>`;
-  mainPlayPause.classList.add("show-main-play-pause");
-  controls.classList.add("show-controls");
-  mainPlayPause.innerHTML = `<ion-icon name="play-outline"></ion-icon>`;
-}
-
-fullscreen.addEventListener("click", (e) => {
-  if (!isFullscreen) {
-    videoContainer.requestFullscreen();
-    videoContainer.classList.add("fullscreen");
-    fullscreen.innerHTML = `<ion-icon name="contract-outline"></ion-icon>`;
-    isFullscreen = true;
-  } else {
-    document.exitFullscreen();
-    videoContainer.classList.remove("fullscreen");
-    fullscreen.innerHTML = `<ion-icon name="scan-outline"></ion-icon>`;
-    isFullscreen = false;
-  }
-});
+fullscreen.addEventListener("click", handleFullscreen);
 
 playPause.addEventListener("click", (e) => {
   if (!isPlaying) {
@@ -104,17 +44,6 @@ playPause.addEventListener("click", (e) => {
 });
 
 duration.addEventListener("click", navigate);
-
-function navigate(e) {
-  const totalDurationRect = duration.getBoundingClientRect();
-  currentTime.style.width = e.clientX - totalDurationRect.x + "px";
-  const currentTimeWidth = currentTime.getBoundingClientRect().width;
-  video.currentTime =
-    (currentTimeWidth / totalDurationRect.width) * video.duration;
-  currentDuration.innerHTML = `${Math.floor(
-    video.currentTime / 60
-  )}:${Math.floor(video.currentTime % 60)}`;
-}
 
 duration.addEventListener("mousedown", (e) => {
   mouseDownProgress = true;
@@ -146,6 +75,7 @@ document.addEventListener("mousemove", (e) => {
   }
 });
 
+videoContainer.addEventListener("mouseout", hideControls);
 videoContainer.addEventListener("mousemove", (e) => {
   controls.classList.add("show-controls");
   hideControls();
@@ -160,16 +90,105 @@ controls.addEventListener("mouseout", (e) => {
   isCursorOnControls = false;
 });
 
-videoContainer.addEventListener("mouseout", (e) => {
-  hideControls();
-});
-
-video.addEventListener("click", handleMainPlayPause);
 mainPlayPause.addEventListener("click", handleMainPlayPause);
 
 mainPlayPause.onanimationend = function () {
   mainPlayPause.classList.remove("animate-main-play-pause");
 };
+
+muteUnmute.addEventListener("click", handleMuteUnmute);
+
+muteUnmute.addEventListener("mouseover", (e) => {
+  if (!muted) {
+    totalVol.classList.add("show");
+  } else {
+    totalVol.classList.remove("show");
+  }
+});
+
+muteUnmute.addEventListener("mouseout", (e) => {
+  if (e.relatedTarget != volume) {
+    totalVol.classList.remove("show");
+  }
+});
+
+function canPlayInit() {
+  totalDuration.innerHTML = `${Math.floor(video.duration / 60)}:${Math.floor(
+    video.duration % 60
+  )}`;
+  video.volume = volumeVal;
+  muted = video.muted;
+  if (video.paused) {
+    controls.classList.add("show-controls");
+    mainPlayPause.classList.add("show-main-play-pause");
+  }
+}
+
+function play() {
+  video.play();
+  isPlaying = true;
+  playPause.innerHTML = `<ion-icon name="pause-outline"></ion-icon>`;
+  mainPlayPause.innerHTML = `<ion-icon name="pause-outline"></ion-icon>`;
+  mainPlayPause.classList.remove("show-main-play-pause");
+  watchInterval();
+}
+
+function watchInterval() {
+  interval = requestAnimationFrame(watchInterval);
+  currentTime.style.width = (video.currentTime / video.duration) * 100 + "%";
+  currentDuration.innerHTML = `${Math.floor(
+    video.currentTime / 60
+  )}:${Math.floor(video.currentTime % 60)}`;
+}
+
+function pause() {
+  video.pause();
+  isPlaying = false;
+  playPause.innerHTML = `<ion-icon name="play-outline"></ion-icon>`;
+  mainPlayPause.classList.add("show-main-play-pause");
+  controls.classList.add("show-controls");
+  mainPlayPause.innerHTML = `<ion-icon name="play-outline"></ion-icon>`;
+  if (video.ended) {
+    currentTime.style.width = 100 + "%";
+  }
+  cancelAnimationFrame(interval);
+}
+
+function navigate(e) {
+  const totalDurationRect = duration.getBoundingClientRect();
+  currentTime.style.width = e.clientX - totalDurationRect.x + "px";
+  const currentTimeWidth = currentTime.getBoundingClientRect().width;
+  video.currentTime =
+    (currentTimeWidth / totalDurationRect.width) * video.duration;
+  currentDuration.innerHTML = `${Math.floor(
+    video.currentTime / 60
+  )}:${Math.floor(video.currentTime % 60)}`;
+}
+
+function handleMuteUnmute() {
+  if (!muted) {
+    video.volume = 0;
+    muted = true;
+    muteUnmute.innerHTML = `<ion-icon name="volume-mute-outline"></ion-icon>`;
+    totalVol.classList.remove("show");
+  } else {
+    video.volume = volumeVal;
+    muted = false;
+    totalVol.classList.add("show");
+    muteUnmute.innerHTML = `<ion-icon name="volume-high-outline"></ion-icon>`;
+  }
+}
+
+function hideControls() {
+  if (timeout) {
+    clearTimeout(timeout);
+  }
+  timeout = setTimeout(() => {
+    if (isPlaying && !isCursorOnControls) {
+      controls.classList.remove("show-controls");
+    }
+  }, 1000);
+}
 
 function handleMainPlayPause() {
   if (!isPlaying) {
@@ -188,43 +207,24 @@ function handleVolume(e) {
   video.volume = volumeVal;
 }
 
-function hideControls() {
-  if (timeout) {
-    clearTimeout(timeout);
+function handleProgress() {
+  if (!video.buffered || !video.buffered.length) {
+    return;
   }
-  timeout = setTimeout(() => {
-    if (isPlaying && !isCursorOnControls) {
-      controls.classList.remove("show-controls");
-    }
-  }, 1000);
+  const width = (video.buffered.end(0) / video.duration) * 100 + "%";
+  buffer.style.width = width;
 }
 
-muteUnmute.addEventListener("click", handleMuteUnmute);
-
-muteUnmute.addEventListener("mouseover", (e) => {
-  if (!muted) {
-    totalVol.classList.add("show");
+function handleFullscreen() {
+  if (!isFullscreen) {
+    videoContainer.requestFullscreen();
+    videoContainer.classList.add("fullscreen");
+    fullscreen.innerHTML = `<ion-icon name="contract-outline"></ion-icon>`;
+    isFullscreen = true;
   } else {
-    totalVol.classList.remove("show");
-  }
-});
-
-muteUnmute.addEventListener("mouseout", (e) => {
-  if (e.relatedTarget != volume) {
-    totalVol.classList.remove("show");
-  }
-});
-
-function handleMuteUnmute() {
-  if (!muted) {
-    video.volume = 0;
-    muted = true;
-    muteUnmute.innerHTML = `<ion-icon name="volume-mute-outline"></ion-icon>`;
-    totalVol.classList.remove("show");
-  } else {
-    video.volume = volumeVal;
-    muted = false;
-    totalVol.classList.add("show");
-    muteUnmute.innerHTML = `<ion-icon name="volume-high-outline"></ion-icon>`;
+    document.exitFullscreen();
+    videoContainer.classList.remove("fullscreen");
+    fullscreen.innerHTML = `<ion-icon name="scan-outline"></ion-icon>`;
+    isFullscreen = false;
   }
 }
