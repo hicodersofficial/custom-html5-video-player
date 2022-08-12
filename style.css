@@ -5,7 +5,7 @@ body {
   align-items: center;
   justify-content: center;
   height: 100vh;
-  background: #3c3c3c;
+  background: #131418;
 }
 
 .video-container {
@@ -38,7 +38,9 @@ body {
   transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   opacity: 0;
   transform: scale(0);
-  background: rgba(0, 0, 0, 0.667);
+  background: rgba(36, 36, 36, 0.667);
+  z-index: 9999;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .animate-main-play-pause {
