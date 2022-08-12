@@ -124,6 +124,16 @@ backward.addEventListener("click", () => {
   handleProgressBar();
 });
 
+document.addEventListener("keydown", (e) => {
+  if (e.code === "Space") {
+    if (isPlaying) {
+      video.pause();
+    } else {
+      video.play();
+    }
+  }
+});
+
 function canPlayInit() {
   totalDuration.innerHTML = `${Math.floor(video.duration / 60)}:${Math.floor(
     video.duration % 60
