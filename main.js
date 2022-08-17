@@ -1,5 +1,5 @@
 const video = document.querySelector("video");
-const fullscreen = document.querySelector(".full-screen");
+const fullscreen = document.querySelector(".fullscreen-btn");
 const playPause = document.querySelector(".play-pause");
 const volume = document.querySelector(".volume");
 const currentTime = document.querySelector(".current-time");
@@ -20,10 +20,8 @@ let isPlaying = false,
   mouseDownProgress = false,
   mouseDownVol = false,
   isCursorOnControls = false,
-  isFullscreen = false,
   muted = false,
   timeout,
-  interval,
   volumeVal = 1;
 
 currentVol.style.width = volumeVal * 100 + "%";
@@ -33,9 +31,12 @@ video.addEventListener("canplay", canPlayInit);
 video.addEventListener("play", play);
 video.addEventListener("pause", pause);
 video.addEventListener("progress", handleProgress);
-video.addEventListener("click", handleMainPlayPause);
+videoContainer.addEventListener("click", toggleMainPlayPause);
 
-fullscreen.addEventListener("click", handleFullscreen);
+fullscreen.addEventListener("click", toggleFullscreen);
+videoContainer.addEventListener("fullscreenchange", () => {
+  videoContainer.classList.toggle("fullscreen", document.fullscreenElement);
+});
 
 playPause.addEventListener("click", (e) => {
   if (!isPlaying) {
@@ -62,9 +63,7 @@ document.addEventListener("mouseup", (e) => {
   mouseDownVol = false;
 });
 
-document.addEventListener("mousemove", (e) => {
-  const totalDurationRect = duration.getBoundingClientRect();
-  const totalVolRect = totalVol.getBoundingClientRect();
+document.addEventListener("mousemove", handleMousemove);
 
   if (
     mouseDownProgress &&
@@ -77,22 +76,22 @@ document.addEventListener("mousemove", (e) => {
   }
 });
 
-videoContainer.addEventListener("mouseout", hideControls);
+videoContainer.addEventListener("mouseleave", hideControls);
 videoContainer.addEventListener("mousemove", (e) => {
   controls.classList.add("show-controls");
   hideControls();
 });
 
-controls.addEventListener("mouseover", (e) => {
+controls.addEventListener("mouseenter", (e) => {
   controls.classList.add("show-controls");
   isCursorOnControls = true;
 });
 
-controls.addEventListener("mouseout", (e) => {
+controls.addEventListener("mouseleave", (e) => {
   isCursorOnControls = false;
 });
 
-mainPlayPause.addEventListener("click", handleMainPlayPause);
+mainPlayPause.addEventListener("click", toggleMainPlayPause);
 
 mainPlayPause.onanimationend = function () {
   mainPlayPause.classList.remove("animate-main-play-pause");
@@ -100,7 +99,7 @@ mainPlayPause.onanimationend = function () {
 
 muteUnmute.addEventListener("click", handleMuteUnmute);
 
-muteUnmute.addEventListener("mouseover", (e) => {
+muteUnmute.addEventListener("mouseenter", (e) => {
   if (!muted) {
     totalVol.classList.add("show");
   } else {
@@ -108,7 +107,7 @@ muteUnmute.addEventListener("mouseover", (e) => {
   }
 });
 
-muteUnmute.addEventListener("mouseout", (e) => {
+muteUnmute.addEventListener("mouseleave", (e) => {
   if (e.relatedTarget != volume) {
     totalVol.classList.remove("show");
   }
@@ -156,9 +155,13 @@ function play() {
 }
 
 function watchInterval() {
-  interval = requestAnimationFrame(watchInterval);
-  handleProgressBar();
+  if (isPlaying) {
+    requestAnimationFrame(watchInterval);
+    handleProgressBar();
+  }
 }
+
+// video.ontimeupdate = handleProgressBar;
 
 function handleProgressBar() {
   currentTime.style.width = (video.currentTime / video.duration) * 100 + "%";
@@ -182,13 +185,27 @@ function pause() {
 
 function navigate(e) {
   const totalDurationRect = duration.getBoundingClientRect();
-  currentTime.style.width = e.clientX - totalDurationRect.x + "px";
-  const currentTimeWidth = currentTime.getBoundingClientRect().width;
-  video.currentTime =
-    (currentTimeWidth / totalDurationRect.width) * video.duration;
-  currentDuration.innerHTML = `${Math.floor(
-    video.currentTime / 60
-  )}:${Math.floor(video.currentTime % 60)}`;
+  const width = Math.min(
+    Math.max(0, e.clientX - totalDurationRect.x),
+    totalDurationRect.width
+  );
+  currentTime.style.width = (width / totalDurationRect.width) * 100 + "%";
+  video.currentTime = (width / totalDurationRect.width) * video.duration;
+}
+
+function showDuration(time) {
+  const hours = Math.floor(time / 60 ** 2);
+  const min = Math.floor((time / 60) % 60);
+  const sec = Math.floor(time % 60);
+  if (hours > 0) {
+    return `${formatter(hours)}:${formatter(min)}:${formatter(sec)}`;
+  } else {
+    return `${formatter(min)}:${formatter(sec)}`;
+  }
+}
+
+function formatter(number) {
+  return new Intl.NumberFormat({}, { minimumIntegerDigits: 2 }).format(number);
 }
 
 function handleMuteUnmute() {
@@ -216,21 +233,27 @@ function hideControls() {
   }, 1000);
 }
 
-function handleMainPlayPause() {
-  if (!isPlaying) {
-    mainPlayPause.classList.add("animate-main-play-pause");
-    play();
-  } else {
-    pause();
+function toggleMainPlayPause(e) {
+  e.stopPropagation();
+  if (!e.path.includes(controls)) {
+    if (!isPlaying) {
+      mainPlayPause.classList.add("animate-main-play-pause");
+      play();
+    } else {
+      pause();
+    }
   }
 }
 
 function handleVolume(e) {
   const totalVolRect = totalVol.getBoundingClientRect();
-  currentVol.style.width = e.clientX - totalVolRect.x + "px";
+  currentVol.style.width =
+    Math.min(Math.max(0, e.clientX - totalVolRect.x), totalVolRect.width) +
+    "px";
   volumeVal = (e.clientX - totalVolRect.x) / totalVolRect.width;
   volumeVal = volumeVal >= 0 ? volumeVal : 0;
   video.volume = volumeVal;
+  console.log(volumeVal);
 }
 
 function handleProgress() {
@@ -241,16 +264,20 @@ function handleProgress() {
   buffer.style.width = width;
 }
 
-function handleFullscreen() {
-  if (!isFullscreen) {
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
     videoContainer.requestFullscreen();
-    videoContainer.classList.add("fullscreen");
-    fullscreen.innerHTML = `<ion-icon name="contract-outline"></ion-icon>`;
-    isFullscreen = true;
   } else {
     document.exitFullscreen();
-    videoContainer.classList.remove("fullscreen");
-    fullscreen.innerHTML = `<ion-icon name="scan-outline"></ion-icon>`;
-    isFullscreen = false;
+  }
+}
+
+function handleMousemove(e) {
+  if (mouseDownProgress) {
+    e.preventDefault();
+    navigate(e);
+  }
+  if (mouseDownVol) {
+    handleVolume(e);
   }
 }
