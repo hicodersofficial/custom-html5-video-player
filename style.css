@@ -97,6 +97,39 @@ body {
   width: 0;
 }
 
+.hover-time {
+  height: 100%;
+  position: absolute;
+  inset: 0;
+  background: #ffffff9a;
+  z-index: 99;
+  display: flex;
+  align-items: center;
+  width: 0;
+}
+
+.hover-time .hover-duration {
+  position: absolute;
+  right: calc((-25px / 2));
+  top: -25px;
+  background: #3c3c3ca7;
+  padding: 0.2rem;
+  border-radius: 5px;
+
+  font-size: 0.7rem;
+  visibility: hidden;
+  font-weight: bold;
+  opacity: 0;
+  transform: scale(0);
+}
+
+.duration:hover .hover-time .hover-duration {
+  visibility: visible;
+  opacity: 1;
+  transition: all 0.2s;
+  transform: scale(1);
+}
+
 .duration .current-time {
   height: 100%;
   position: absolute;

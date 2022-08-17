@@ -15,6 +15,8 @@ const mainPlayPause = document.querySelector(".play-pause-main");
 const muteUnmute = document.querySelector(".mute-unmute");
 const forward = document.querySelector(".forward");
 const backward = document.querySelector(".backward");
+const hoverTime = document.querySelector(".hover-time");
+const hoverDuration = document.querySelector(".hover-duration");
 
 let isPlaying = false,
   mouseDownProgress = false,
@@ -22,7 +24,8 @@ let isPlaying = false,
   isCursorOnControls = false,
   muted = false,
   timeout,
-  volumeVal = 1;
+  volumeVal = 1,
+  mouseOverDuration = false;
 
 currentVol.style.width = volumeVal * 100 + "%";
 
@@ -65,15 +68,13 @@ document.addEventListener("mouseup", (e) => {
 
 document.addEventListener("mousemove", handleMousemove);
 
-  if (
-    mouseDownProgress &&
-    totalDurationRect.width >= e.clientX - totalDurationRect.x
-  ) {
-    navigate(e);
-  }
-  if (mouseDownVol && totalVolRect.width >= e.clientX - totalVolRect.x) {
-    handleVolume(e);
-  }
+duration.addEventListener("mouseenter", (e) => {
+  mouseOverDuration = true;
+});
+duration.addEventListener("mouseleave", (e) => {
+  mouseOverDuration = false;
+  hoverTime.style.width = 0;
+  hoverDuration.innerHTML = "";
 });
 
 videoContainer.addEventListener("mouseleave", hideControls);
@@ -95,6 +96,7 @@ mainPlayPause.addEventListener("click", toggleMainPlayPause);
 
 mainPlayPause.onanimationend = function () {
   mainPlayPause.classList.remove("animate-main-play-pause");
+  console.log("animation ended");
 };
 
 muteUnmute.addEventListener("click", handleMuteUnmute);
@@ -124,6 +126,17 @@ backward.addEventListener("click", () => {
 });
 
 document.addEventListener("keydown", (e) => {
+  const tagName = document.activeElement.tagName.toLowerCase();
+  if (tagName === "input") return;
+  switch (e.key.toLowerCase()) {
+    case " ":
+      if (tagName === "button") return;
+      break;
+    case "f":
+      toggleFullscreen();
+    default:
+      break;
+  }
   if (e.code === "Space") {
     if (isPlaying) {
       video.pause();
@@ -134,9 +147,7 @@ document.addEventListener("keydown", (e) => {
 });
 
 function canPlayInit() {
-  totalDuration.innerHTML = `${Math.floor(video.duration / 60)}:${Math.floor(
-    video.duration % 60
-  )}`;
+  totalDuration.innerHTML = showDuration(video.duration);
   video.volume = volumeVal;
   muted = video.muted;
   if (video.paused) {
@@ -165,9 +176,7 @@ function watchInterval() {
 
 function handleProgressBar() {
   currentTime.style.width = (video.currentTime / video.duration) * 100 + "%";
-  currentDuration.innerHTML = `${Math.floor(
-    video.currentTime / 60
-  )}:${Math.floor(video.currentTime % 60)}`;
+  currentDuration.innerHTML = showDuration(video.currentTime);
 }
 
 function pause() {
@@ -180,7 +189,6 @@ function pause() {
   if (video.ended) {
     currentTime.style.width = 100 + "%";
   }
-  cancelAnimationFrame(interval);
 }
 
 function navigate(e) {
@@ -279,5 +287,12 @@ function handleMousemove(e) {
   }
   if (mouseDownVol) {
     handleVolume(e);
+  }
+  if (mouseOverDuration) {
+    const rect = duration.getBoundingClientRect();
+    const width = Math.min(Math.max(0, e.clientX - rect.x), rect.width);
+    const percent = (width / rect.width) * 100;
+    hoverTime.style.width = width + "px";
+    hoverDuration.innerHTML = showDuration((video.duration / 100) * percent);
   }
 }
