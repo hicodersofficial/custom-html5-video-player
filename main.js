@@ -11,12 +11,14 @@ const controls = document.querySelector(".controls");
 const videoContainer = document.querySelector(".video-container");
 const currentVol = document.querySelector(".current-vol");
 const totalVol = document.querySelector(".max-vol");
-const mainPlayPause = document.querySelector(".play-pause-main");
+const mainState = document.querySelector(".main-state");
 const muteUnmute = document.querySelector(".mute-unmute");
 const forward = document.querySelector(".forward");
 const backward = document.querySelector(".backward");
 const hoverTime = document.querySelector(".hover-time");
 const hoverDuration = document.querySelector(".hover-duration");
+const backwardSate = document.querySelector(".state-backward");
+const forwardSate = document.querySelector(".state-forward");
 
 let isPlaying = false,
   mouseDownProgress = false,
@@ -30,11 +32,11 @@ let isPlaying = false,
 currentVol.style.width = volumeVal * 100 + "%";
 
 // Video Event Listeners
-video.addEventListener("canplay", canPlayInit);
+video.addEventListener("loadedmetadata", canPlayInit);
 video.addEventListener("play", play);
 video.addEventListener("pause", pause);
 video.addEventListener("progress", handleProgress);
-videoContainer.addEventListener("click", toggleMainPlayPause);
+videoContainer.addEventListener("click", toggleMainState);
 
 fullscreen.addEventListener("click", toggleFullscreen);
 videoContainer.addEventListener("fullscreenchange", () => {
@@ -92,14 +94,11 @@ controls.addEventListener("mouseleave", (e) => {
   isCursorOnControls = false;
 });
 
-mainPlayPause.addEventListener("click", toggleMainPlayPause);
+mainState.addEventListener("click", toggleMainState);
 
-mainPlayPause.onanimationend = function () {
-  mainPlayPause.classList.remove("animate-main-play-pause");
-  console.log("animation ended");
-};
+mainState.addEventListener("animationend", handleMainSateAnimationEnd);
 
-muteUnmute.addEventListener("click", handleMuteUnmute);
+muteUnmute.addEventListener("click", toggleMuteUnmute);
 
 muteUnmute.addEventListener("mouseenter", (e) => {
   if (!muted) {
@@ -115,14 +114,18 @@ muteUnmute.addEventListener("mouseleave", (e) => {
   }
 });
 
-forward.addEventListener("click", () => {
-  video.currentTime += 5;
-  handleProgressBar();
+forward.addEventListener("click", handleForward);
+
+forwardSate.addEventListener("animationend", () => {
+  forwardSate.classList.remove("show-state");
+  forwardSate.classList.remove("animate-state");
 });
 
-backward.addEventListener("click", () => {
-  video.currentTime -= 5;
-  handleProgressBar();
+backward.addEventListener("click", handleBackward);
+
+backwardSate.addEventListener("animationend", () => {
+  backwardSate.classList.remove("show-state");
+  backwardSate.classList.remove("animate-state");
 });
 
 document.addEventListener("keydown", (e) => {
@@ -152,7 +155,8 @@ function canPlayInit() {
   muted = video.muted;
   if (video.paused) {
     controls.classList.add("show-controls");
-    mainPlayPause.classList.add("show-main-play-pause");
+    mainState.classList.add("show-state");
+    handleMainStateIcon(`<ion-icon name="play-outline"></ion-icon>`);
   }
 }
 
@@ -160,8 +164,8 @@ function play() {
   video.play();
   isPlaying = true;
   playPause.innerHTML = `<ion-icon name="pause-outline"></ion-icon>`;
-  mainPlayPause.innerHTML = `<ion-icon name="pause-outline"></ion-icon>`;
-  mainPlayPause.classList.remove("show-main-play-pause");
+  mainState.classList.remove("show-state");
+  handleMainStateIcon(`<ion-icon name="pause-outline"></ion-icon>`);
   watchInterval();
 }
 
@@ -183,9 +187,9 @@ function pause() {
   video.pause();
   isPlaying = false;
   playPause.innerHTML = `<ion-icon name="play-outline"></ion-icon>`;
-  mainPlayPause.classList.add("show-main-play-pause");
   controls.classList.add("show-controls");
-  mainPlayPause.innerHTML = `<ion-icon name="play-outline"></ion-icon>`;
+  mainState.classList.add("show-state");
+  handleMainStateIcon(`<ion-icon name="play-outline"></ion-icon>`);
   if (video.ended) {
     currentTime.style.width = 100 + "%";
   }
@@ -216,16 +220,18 @@ function formatter(number) {
   return new Intl.NumberFormat({}, { minimumIntegerDigits: 2 }).format(number);
 }
 
-function handleMuteUnmute() {
+function toggleMuteUnmute() {
   if (!muted) {
     video.volume = 0;
     muted = true;
     muteUnmute.innerHTML = `<ion-icon name="volume-mute-outline"></ion-icon>`;
+    handleMainStateIcon(`<ion-icon name="volume-mute-outline"></ion-icon>`);
     totalVol.classList.remove("show");
   } else {
     video.volume = volumeVal;
     muted = false;
     totalVol.classList.add("show");
+    handleMainStateIcon(`<ion-icon name="volume-high-outline"></ion-icon>`);
     muteUnmute.innerHTML = `<ion-icon name="volume-high-outline"></ion-icon>`;
   }
 }
@@ -241,11 +247,10 @@ function hideControls() {
   }, 1000);
 }
 
-function toggleMainPlayPause(e) {
+function toggleMainState(e) {
   e.stopPropagation();
   if (!e.path.includes(controls)) {
     if (!isPlaying) {
-      mainPlayPause.classList.add("animate-main-play-pause");
       play();
     } else {
       pause();
@@ -261,7 +266,6 @@ function handleVolume(e) {
   volumeVal = (e.clientX - totalVolRect.x) / totalVolRect.width;
   volumeVal = volumeVal >= 0 ? volumeVal : 0;
   video.volume = volumeVal;
-  console.log(volumeVal);
 }
 
 function handleProgress() {
@@ -294,5 +298,34 @@ function handleMousemove(e) {
     const percent = (width / rect.width) * 100;
     hoverTime.style.width = width + "px";
     hoverDuration.innerHTML = showDuration((video.duration / 100) * percent);
+  }
+}
+
+function handleForward() {
+  forwardSate.classList.add("show-state");
+  forwardSate.classList.add("animate-state");
+  video.currentTime += 5;
+  handleProgressBar();
+}
+
+function handleBackward() {
+  backwardSate.classList.add("show-state");
+  backwardSate.classList.add("animate-state");
+  video.currentTime -= 5;
+  handleProgressBar();
+}
+
+function handleMainStateIcon(icon) {
+  mainState.classList.add("animate-state");
+  mainState.innerHTML = icon;
+}
+
+function handleMainSateAnimationEnd() {
+  mainState.classList.remove("animate-state");
+  if (!isPlaying) {
+    mainState.innerHTML = `<ion-icon name="play-outline"></ion-icon>`;
+  }
+  if (document.pictureInPictureElement) {
+    mainState.innerHTML = ` <ion-icon name="tv-outline"></ion-icon>`;
   }
 }

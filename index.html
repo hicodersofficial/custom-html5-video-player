@@ -28,9 +28,19 @@
         disableRemotePlayback
         src="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
       ></video>
-      <span class="play-pause-main">
-        <ion-icon name="play-outline"></ion-icon>
-      </span>
+      <div class="player-state">
+        <span class="state-btn state-backward">
+          <ion-icon name="play-back-outline"></ion-icon>
+          <span class="backward-duration">5</span>
+        </span>
+        <span class="main-state state-btn">
+          <ion-icon name="play-outline"></ion-icon>
+        </span>
+        <span class="state-btn state-forward">
+          <span class="forward-duration">5</span>
+          <ion-icon name="play-forward-outline"></ion-icon>
+        </span>
+      </div>
       <div class="controls">
         <div class="duration">
           <div class="current-time"></div>
