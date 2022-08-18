@@ -32,7 +32,10 @@ let isPlaying = false,
   muted = false,
   timeout,
   volumeVal = 1,
-  mouseOverDuration = false;
+  mouseOverDuration = false,
+  touchClientX = 0,
+  touchPastDurationWidth = 0,
+  touchStartTime = 0;
 
 currentVol.style.width = volumeVal * 100 + "%";
 
@@ -89,6 +92,36 @@ videoContainer.addEventListener("mousemove", (e) => {
   controls.classList.add("show-controls");
   hideControls();
 });
+
+videoContainer.addEventListener("touchstart", (e) => {
+  controls.classList.add("show-controls");
+  touchClientX = e.changedTouches[0].clientX;
+  const currentTimeRect = currentTime.getBoundingClientRect();
+  touchPastDurationWidth = currentTimeRect.width;
+  touchStartTime = e.timeStamp;
+});
+videoContainer.addEventListener("touchend", () => {
+  hideControls();
+  touchClientX = 0;
+  touchPastDurationWidth = 0;
+  touchStartTime = 0;
+});
+videoContainer.addEventListener("touchmove", touchNavigate);
+
+function touchNavigate(e) {
+  hideControls();
+  if (e.timeStamp - touchStartTime > 500) {
+    const durationRect = duration.getBoundingClientRect();
+    const clientX = e.changedTouches[0].clientX;
+    const value = Math.min(
+      Math.max(0, touchPastDurationWidth + (clientX - touchClientX) * 0.2),
+      durationRect.width
+    );
+    currentTime.style.width = value + "px";
+    video.currentTime = (value / durationRect.width) * video.duration;
+    currentDuration.innerHTML = showDuration(video.currentTime);
+  }
+}
 
 controls.addEventListener("mouseenter", (e) => {
   controls.classList.add("show-controls");
