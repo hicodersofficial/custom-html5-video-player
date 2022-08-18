@@ -212,6 +212,11 @@ body {
   border: 1px solid transparent;
   box-sizing: border-box;
   position: relative;
+  margin-right: 0.5rem;
+}
+
+.control-btn:last-child {
+  margin-right: 0;
 }
 
 .control-btn:hover {
@@ -267,7 +272,6 @@ body {
 
 .max-vol.show {
   width: 56px;
-  margin-left: 0.5rem;
   visibility: visible;
   transform: scaleX(1);
 }
@@ -294,6 +298,65 @@ body {
   background: #eee;
 }
 
+.setting-menu {
+  opacity: 0;
+  visibility: hidden;
+  list-style: none;
+  padding-inline-start: 0;
+  margin-block-start: 0;
+  margin-block-end: 0;
+  position: absolute;
+  bottom: 4.5rem;
+  transition: all 0.2s;
+  background: rgba(28, 28, 28, 0.9);
+  transform: scaleY(0);
+  transform-origin: bottom;
+  border-radius: 5px;
+}
+
+.setting-menu li {
+  padding: 0.3rem 2rem;
+  margin: 0.5rem;
+  transition: all 0.2s;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.speed-active {
+  background: rgb(23, 23, 23);
+}
+
+.setting-menu li:hover {
+  background: rgb(31, 31, 31);
+}
+
+.setting-btn {
+  display: flex;
+}
+
+.show-setting-menu {
+  opacity: 1;
+  transform: scaleY(1);
+  visibility: visible;
+}
+
+.theater {
+  width: 100% !important;
+}
+
+.theater-btn .theater-default,
+.theater-btn .theater-active {
+  display: flex;
+}
+.video-container.theater .theater-default {
+  display: none;
+}
+
+.video-container:not(.theater) .theater-active {
+  display: none;
+}
+
 .fullscreen {
   position: absolute !important;
   max-width: 100% !important;
@@ -311,10 +374,6 @@ body {
 
 .right-controls span {
   cursor: pointer;
-}
-
-.forward {
-  margin: 0 0.5rem;
 }
 
 .full,
