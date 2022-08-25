@@ -24,6 +24,7 @@ const theaterBtn = document.querySelector(".theater-btn");
 const speedButtons = document.querySelectorAll(".setting-menu li");
 const backwardSate = document.querySelector(".state-backward");
 const forwardSate = document.querySelector(".state-forward");
+const loader = document.querySelector(".custom-loader");
 
 let isPlaying = false,
   mouseDownProgress = false,
@@ -44,6 +45,8 @@ video.addEventListener("loadedmetadata", canPlayInit);
 video.addEventListener("play", play);
 video.addEventListener("pause", pause);
 video.addEventListener("progress", handleProgress);
+video.addEventListener("waiting", handleWaiting);
+video.addEventListener("playing", handlePlaying);
 
 document.addEventListener("keydown", handleShorthand);
 fullscreen.addEventListener("click", toggleFullscreen);
@@ -205,6 +208,14 @@ function pause() {
   if (video.ended) {
     currentTime.style.width = 100 + "%";
   }
+}
+
+function handleWaiting() {
+  loader.style.display = "unset";
+}
+
+function handlePlaying() {
+  loader.style.display = "none";
 }
 
 function navigate(e) {

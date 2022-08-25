@@ -25,6 +25,21 @@ body {
   max-height: 100%;
 }
 
+.custom-loader {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border-top: 5px solid transparent;
+  border-right: 5px solid #ffffff;
+  border-left: 5px solid #ffffff;
+  border-bottom: 5px solid #ffffff;
+  z-index: 9999;
+  animation: rotation 2s infinite ease;
+  -webkit-animation: rotation 2s infinite ease;
+  display: none;
+}
+
 .player-state {
   display: flex;
   position: absolute;
@@ -397,5 +412,14 @@ body {
   100% {
     opacity: 0;
     transform: scale(1);
+  }
+}
+
+@keyframes rotation {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }
