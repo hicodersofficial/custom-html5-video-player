@@ -239,15 +239,15 @@ function play() {
   playPause.innerHTML = `<ion-icon name="pause-outline"></ion-icon>`;
   mainState.classList.remove("show-state");
   handleMainStateIcon(`<ion-icon name="pause-outline"></ion-icon>`);
-  // watchInterval();
+  // watchProgress();
 }
 
-function watchInterval() {
-  if (isPlaying) {
-    requestAnimationFrame(watchInterval);
-    handleProgressBar();
-  }
-}
+// function watchProgress() {
+//   if (isPlaying) {
+//     requestAnimationFrame(watchProgress);
+//     handleProgressBar();
+//   }
+// }
 
 video.ontimeupdate = handleProgressBar;
 
