@@ -44,12 +44,9 @@ video.addEventListener("loadedmetadata", canPlayInit);
 video.addEventListener("play", play);
 video.addEventListener("pause", pause);
 video.addEventListener("progress", handleProgress);
-videoContainer.addEventListener("click", toggleMainState);
 
+document.addEventListener("keydown", handleShorthand);
 fullscreen.addEventListener("click", toggleFullscreen);
-videoContainer.addEventListener("fullscreenchange", () => {
-  videoContainer.classList.toggle("fullscreen", document.fullscreenElement);
-});
 
 playPause.addEventListener("click", (e) => {
   if (!isPlaying) {
@@ -87,12 +84,15 @@ duration.addEventListener("mouseleave", (e) => {
   hoverDuration.innerHTML = "";
 });
 
+videoContainer.addEventListener("click", toggleMainState);
+videoContainer.addEventListener("fullscreenchange", () => {
+  videoContainer.classList.toggle("fullscreen", document.fullscreenElement);
+});
 videoContainer.addEventListener("mouseleave", hideControls);
 videoContainer.addEventListener("mousemove", (e) => {
   controls.classList.add("show-controls");
   hideControls();
 });
-
 videoContainer.addEventListener("touchstart", (e) => {
   controls.classList.add("show-controls");
   touchClientX = e.changedTouches[0].clientX;
@@ -106,22 +106,7 @@ videoContainer.addEventListener("touchend", () => {
   touchPastDurationWidth = 0;
   touchStartTime = 0;
 });
-videoContainer.addEventListener("touchmove", touchNavigate);
-
-function touchNavigate(e) {
-  hideControls();
-  if (e.timeStamp - touchStartTime > 500) {
-    const durationRect = duration.getBoundingClientRect();
-    const clientX = e.changedTouches[0].clientX;
-    const value = Math.min(
-      Math.max(0, touchPastDurationWidth + (clientX - touchClientX) * 0.2),
-      durationRect.width
-    );
-    currentTime.style.width = value + "px";
-    video.currentTime = (value / durationRect.width) * video.duration;
-    currentDuration.innerHTML = showDuration(video.currentTime);
-  }
-}
+videoContainer.addEventListener("touchmove", handleTouchNavigate);
 
 controls.addEventListener("mouseenter", (e) => {
   controls.classList.add("show-controls");
@@ -174,52 +159,6 @@ settingsBtn.addEventListener("click", handleSettingMenu);
 
 speedButtons.forEach((btn) => {
   btn.addEventListener("click", handlePlaybackRate);
-});
-
-document.addEventListener("keydown", (e) => {
-  const tagName = document.activeElement.tagName.toLowerCase();
-  if (tagName === "input") return;
-  if (e.key.match(/[0-9]/gi)) {
-    video.currentTime = (video.duration / 100) * (parseInt(e.key) * 10);
-    currentTime.style.width = parseInt(e.key) * 10 + "%";
-  }
-  switch (e.key.toLowerCase()) {
-    case " ":
-      if (tagName === "button") return;
-      if (isPlaying) {
-        video.pause();
-      } else {
-        video.play();
-      }
-      break;
-    case "f":
-      toggleFullscreen();
-      break;
-    case "arrowright":
-      handleForward();
-      break;
-    case "arrowleft":
-      handleBackward();
-      break;
-    case "t":
-      toggleTheater();
-      break;
-    case "i":
-      toggleMiniPlayer();
-      break;
-    case "m":
-      toggleMuteUnmute();
-      break;
-    case "+":
-      handlePlaybackRateKey("increase");
-      break;
-    case "-":
-      handlePlaybackRateKey();
-      break;
-
-    default:
-      break;
-  }
 });
 
 function canPlayInit() {
@@ -276,6 +215,21 @@ function navigate(e) {
   );
   currentTime.style.width = (width / totalDurationRect.width) * 100 + "%";
   video.currentTime = (width / totalDurationRect.width) * video.duration;
+}
+
+function handleTouchNavigate(e) {
+  hideControls();
+  if (e.timeStamp - touchStartTime > 500) {
+    const durationRect = duration.getBoundingClientRect();
+    const clientX = e.changedTouches[0].clientX;
+    const value = Math.min(
+      Math.max(0, touchPastDurationWidth + (clientX - touchClientX) * 0.2),
+      durationRect.width
+    );
+    currentTime.style.width = value + "px";
+    video.currentTime = (value / durationRect.width) * video.duration;
+    currentDuration.innerHTML = showDuration(video.currentTime);
+  }
 }
 
 function showDuration(time) {
@@ -457,4 +411,50 @@ function handlePlaybackRateKey(type = "") {
       btn.classList.add("speed-active");
     }
   });
+}
+
+function handleShorthand(e) {
+  const tagName = document.activeElement.tagName.toLowerCase();
+  if (tagName === "input") return;
+  if (e.key.match(/[0-9]/gi)) {
+    video.currentTime = (video.duration / 100) * (parseInt(e.key) * 10);
+    currentTime.style.width = parseInt(e.key) * 10 + "%";
+  }
+  switch (e.key.toLowerCase()) {
+    case " ":
+      if (tagName === "button") return;
+      if (isPlaying) {
+        video.pause();
+      } else {
+        video.play();
+      }
+      break;
+    case "f":
+      toggleFullscreen();
+      break;
+    case "arrowright":
+      handleForward();
+      break;
+    case "arrowleft":
+      handleBackward();
+      break;
+    case "t":
+      toggleTheater();
+      break;
+    case "i":
+      toggleMiniPlayer();
+      break;
+    case "m":
+      toggleMuteUnmute();
+      break;
+    case "+":
+      handlePlaybackRateKey("increase");
+      break;
+    case "-":
+      handlePlaybackRateKey();
+      break;
+
+    default:
+      break;
+  }
 }
